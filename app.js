@@ -16,6 +16,10 @@ app.use(cors());
 app.use(express.json());
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 
+app.get('/', (req, res) => {
+  res.json({ ok: true, message: 'TuneFlow API', endpoints: ['/api/songs', '/api/auth', '/api/playlists', '/api/comments', '/api/likes'] });
+});
+
 app.use('/api/auth', authRoutes);
 app.use('/api/songs', songsRoutes);
 app.use('/api/playlists', playlistsRoutes);
