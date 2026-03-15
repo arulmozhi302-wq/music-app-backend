@@ -5,6 +5,18 @@ import fs from 'fs';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
+const sharedFileFilter = (req, file, cb) => {
+  if (file.fieldname === 'audio') {
+    const allowed = /\.(mp3|m4a|wav|ogg)$/i;
+    if (allowed.test(file.originalname) || file.mimetype?.startsWith('audio/')) cb(null, true);
+    else cb(new Error('Only audio files (mp3, m4a, wav, ogg) are allowed'));
+  } else {
+    const allowed = /\.(jpg|jpeg|png|gif|webp)$/i;
+    if (allowed.test(file.originalname) || file.mimetype?.startsWith('image/')) cb(null, true);
+    else cb(new Error('Only image files (jpg, png, gif, webp) are allowed'));
+  }
+};
+
 const audioStorage = multer.diskStorage({
   destination: (req, file, cb) => {
     const uploadPath = path.join(__dirname, '../uploads/audio');
@@ -74,15 +86,12 @@ const songUploadStorage = multer.diskStorage({
 export const uploadAudioAndCover = multer({
   storage: songUploadStorage,
   limits: { fileSize: 25 * 1024 * 1024 },
-  fileFilter: (req, file, cb) => {
-    if (file.fieldname === 'audio') {
-      const allowed = /\.(mp3|m4a|wav|ogg)$/i;
-      if (allowed.test(file.originalname) || file.mimetype?.startsWith('audio/')) cb(null, true);
-      else cb(new Error('Only audio files (mp3, m4a, wav, ogg) are allowed'));
-    } else {
-      const allowed = /\.(jpg|jpeg|png|gif|webp)$/i;
-      if (allowed.test(file.originalname) || file.mimetype?.startsWith('image/')) cb(null, true);
-      else cb(new Error('Only image files (jpg, png, gif, webp) are allowed'));
-    }
-  },
+  fileFilter: sharedFileFilter,
+});
+
+// Memory storage for Cloudinary: use when config is configured; files will be in req.files.*[0].buffer
+export const uploadAudioAndCoverMemory = multer({
+  storage: multer.memoryStorage(),
+  limits: { fileSize: 25 * 1024 * 1024 },
+  fileFilter: sharedFileFilter,
 });

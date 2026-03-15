@@ -5,6 +5,7 @@ import { fileURLToPath } from 'url';
 import mongoose from 'mongoose';
 import Song from './models/Song.js';
 
+import './config/cloudinary.js';
 import authRoutes from './routes/auth.js';
 import songsRoutes from './routes/songs.js';
 import playlistsRoutes from './routes/playlists.js';

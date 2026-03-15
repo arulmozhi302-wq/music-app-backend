@@ -4,19 +4,25 @@ import path from 'path';
 import { fileURLToPath } from 'url';
 import Song from '../models/Song.js';
 import { auth, optionalAuth } from '../middleware/auth.js';
-import { uploadAudioAndCover } from '../middleware/upload.js';
+import { uploadAudioAndCover, uploadAudioAndCoverMemory } from '../middleware/upload.js';
+import { isConfigured as cloudinaryConfigured, uploadBuffer } from '../config/cloudinary.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const router = express.Router();
 
-router.post('/upload', auth, (req, res, next) => {
-  uploadAudioAndCover.fields([{ name: 'audio', maxCount: 1 }, { name: 'cover', maxCount: 1 }])(req, res, (err) => {
+const uploadFields = [{ name: 'audio', maxCount: 1 }, { name: 'cover', maxCount: 1 }];
+const runUpload = (multerMiddleware) => (req, res, next) => {
+  multerMiddleware.fields(uploadFields)(req, res, (err) => {
     if (err) {
       if (err.code === 'LIMIT_FILE_SIZE') return res.status(400).json({ message: 'File too large (max 25MB)' });
       return res.status(400).json({ message: err.message || 'Upload failed' });
     }
     next();
   });
+};
+
+router.post('/upload', auth, (req, res, next) => {
+  (cloudinaryConfigured ? runUpload(uploadAudioAndCoverMemory) : runUpload(uploadAudioAndCover))(req, res, next);
 }, async (req, res) => {
   try {
     const audioFile = req.files?.audio?.[0];
@@ -24,8 +30,20 @@ router.post('/upload', auth, (req, res, next) => {
     if (!audioFile) return res.status(400).json({ message: 'Audio file required' });
     const { title, artist, album = '', genre = 'Tamil', movieName = '', duration } = req.body;
     if (!title || !artist) return res.status(400).json({ message: 'Title and artist required' });
-    const audioUrl = '/uploads/audio/' + audioFile.filename;
-    const coverUrl = coverFile ? '/uploads/covers/' + coverFile.filename : (req.body.coverUrl || '');
+
+    let audioUrl, coverUrl;
+    if (cloudinaryConfigured && audioFile.buffer) {
+      const [audioResult, coverResult] = await Promise.all([
+        uploadBuffer(audioFile.buffer, { folder: 'audio', resource_type: 'video' }),
+        coverFile?.buffer ? uploadBuffer(coverFile.buffer, { folder: 'covers' }) : Promise.resolve(null),
+      ]);
+      audioUrl = audioResult?.secure_url ?? '';
+      coverUrl = coverResult?.secure_url ?? (req.body.coverUrl || '');
+    } else {
+      audioUrl = '/uploads/audio/' + audioFile.filename;
+      coverUrl = coverFile ? '/uploads/covers/' + coverFile.filename : (req.body.coverUrl || '');
+    }
+
     const song = await Song.create({
       title: title.trim(),
       artist: artist.trim(),
@@ -34,7 +52,7 @@ router.post('/upload', auth, (req, res, next) => {
       movieName: (movieName || '').trim(),
       duration: Number(duration) || 180,
       audioUrl,
-      coverUrl: coverUrl.trim(),
+      coverUrl: (coverUrl || '').trim(),
     });
     res.status(201).json(song);
   } catch (e) {
