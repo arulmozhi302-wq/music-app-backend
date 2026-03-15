@@ -1,0 +1,20 @@
+[
+  {
+    "file": "Ponni-Nadhi.mp3",
+    "title": "Ponni Nadhi",
+    "artist": "A.R. Rahman",
+    "album": "RRR",
+    "genre": "Tamil",
+    "movieName": "RRR",
+    "duration": 245
+  },
+  {
+    "file": "Hukum.mp3",
+    "title": "Hukum",
+    "artist": "Anirudh",
+    "album": "Jailer",
+    "genre": "Tamil",
+    "movieName": "Jailer",
+    "duration": 220
+  }
+]

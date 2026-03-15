@@ -1,16 +1,55 @@
 import express from 'express';
 import { Readable } from 'stream';
+import path from 'path';
+import { fileURLToPath } from 'url';
 import Song from '../models/Song.js';
 import { auth, optionalAuth } from '../middleware/auth.js';
+import { uploadAudioAndCover } from '../middleware/upload.js';
 
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const router = express.Router();
+
+router.post('/upload', auth, (req, res, next) => {
+  uploadAudioAndCover.fields([{ name: 'audio', maxCount: 1 }, { name: 'cover', maxCount: 1 }])(req, res, (err) => {
+    if (err) {
+      if (err.code === 'LIMIT_FILE_SIZE') return res.status(400).json({ message: 'File too large (max 25MB)' });
+      return res.status(400).json({ message: err.message || 'Upload failed' });
+    }
+    next();
+  });
+}, async (req, res) => {
+  try {
+    const audioFile = req.files?.audio?.[0];
+    const coverFile = req.files?.cover?.[0];
+    if (!audioFile) return res.status(400).json({ message: 'Audio file required' });
+    const { title, artist, album = '', genre = 'Tamil', movieName = '', duration } = req.body;
+    if (!title || !artist) return res.status(400).json({ message: 'Title and artist required' });
+    const audioUrl = '/uploads/audio/' + audioFile.filename;
+    const coverUrl = coverFile ? '/uploads/covers/' + coverFile.filename : (req.body.coverUrl || '');
+    const song = await Song.create({
+      title: title.trim(),
+      artist: artist.trim(),
+      album: (album || '').trim(),
+      genre: (genre || 'Tamil').trim(),
+      movieName: (movieName || '').trim(),
+      duration: Number(duration) || 180,
+      audioUrl,
+      coverUrl: coverUrl.trim(),
+    });
+    res.status(201).json(song);
+  } catch (e) {
+    res.status(500).json({ message: e.message });
+  }
+});
 
 router.get('/', optionalAuth, async (req, res) => {
   try {
-    const { genre, limit = 50, skip = 0 } = req.query;
-    const filter = genre ? { genre } : {};
+    const { genre, album, limit = 50, skip = 0 } = req.query;
+    const filter = {};
+    if (genre) filter.genre = genre;
+    if (album) filter.album = album;
     let songs = await Song.find(filter).sort({ playCount: -1, createdAt: -1 }).skip(Number(skip)).limit(Number(limit)).lean();
-    if (req.user?.preferredGenres?.length) {
+    if (req.user?.preferredGenres?.length && !genre && !album) {
       const preferred = await Song.find({ genre: { $in: req.user.preferredGenres } }).sort({ playCount: -1 }).limit(20).lean();
       const ids = new Set(preferred.map(s => s._id.toString()));
       songs = [...preferred, ...songs.filter(s => !ids.has(s._id.toString()))];
@@ -57,9 +96,18 @@ router.get('/genres', async (req, res) => {
   }
 });
 
+router.get('/albums', async (req, res) => {
+  try {
+    const albums = await Song.distinct('album').then((a) => a.filter((x) => x && x.trim()));
+    res.json(albums.sort());
+  } catch (e) {
+    res.status(500).json({ message: e.message });
+  }
+});
+
 router.get('/recommended', optionalAuth, async (req, res) => {
   try {
-    const genres = req.user?.preferredGenres?.length ? req.user.preferredGenres : ['Pop', 'Rock', 'Hip Hop'];
+    const genres = req.user?.preferredGenres?.length ? req.user.preferredGenres : ['Tamil'];
     const songs = await Song.find({ genre: { $in: genres } }).sort({ playCount: -1, likeCount: -1 }).limit(20).lean();
     res.json(songs);
   } catch (e) {

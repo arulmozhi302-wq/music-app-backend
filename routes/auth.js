@@ -31,9 +31,13 @@ router.post('/register', async (req, res) => {
 
 router.post('/login', async (req, res) => {
   try {
-    const { email, password } = req.body;
-    if (!email || !password) return res.status(400).json({ message: 'Email and password required' });
-    const user = await User.findOne({ email });
+    const { email, username, password } = req.body;
+    const identifier = email || username;
+    if (!identifier || !password) return res.status(400).json({ message: 'Email/username and password required' });
+    const isEmail = identifier.includes('@');
+    const user = await User.findOne(
+      isEmail ? { email: identifier.toLowerCase().trim() } : { username: identifier.trim() }
+    );
     if (!user) return res.status(401).json({ message: 'Invalid credentials' });
     const match = await bcrypt.compare(password, user.password);
     if (!match) return res.status(401).json({ message: 'Invalid credentials' });
