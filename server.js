@@ -3,7 +3,7 @@ import mongoose from 'mongoose';
 import app from './app.js';
 
 const PORT = process.env.PORT || 5000;
-const MONGODB_URI = process.env.MONGODB_URI || 'mongodb://localhost:27017/music-streaming';
+const MONGODB_URI = process.env.MONGODB_URI || 'mongodb+srv://b39-fsd:6m2ctkcWfghf5SRa@cluster0.aabihuz.mongodb.net/music-streaming';
 
 mongoose.connect(MONGODB_URI).then(() => {
   console.log('MongoDB connected');
