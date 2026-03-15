@@ -1,20 +1,21 @@
-# Hi 👋 I'm Arul
+# 🎧 TuneFlow Backend API
 
-💻 MERN Stack Developer \| Frontend Developer\
-📍 India
+TuneFlow Backend is a RESTful API for a music streaming application built with Node.js, Express, and MongoDB.
+It provides APIs for managing songs, user authentication, playlists, likes, and comments.
+
+The backend handles secure authentication, database operations, and cloud media storage.
 
 ------------------------------------------------------------------------
 
-## 🚀 About Me
+Frontend\
+https://music-app-frontend-roan.vercel.app
 
-I am a passionate **MERN Stack Developer** who enjoys building modern
-web applications with clean UI and scalable backend systems.
+Backend API\
+https://music-app-backend-tawny.vercel.app
 
-I specialize in: - React.js - JavaScript (ES6+) - Node.js & Express -
-MongoDB - Tailwind CSS
+Songs API\
+https://music-app-backend-tawny.vercel.app/api/songs
 
-I love building **full‑stack applications, APIs, and modern UI
-experiences.**
 
 ------------------------------------------------------------------------
 
@@ -65,28 +66,113 @@ A full‑stack music streaming application where users can:
 
 **Tech Used** React • Node.js • Express • MongoDB • Cloudinary
 
-Frontend\
-https://music-app-frontend-roan.vercel.app
 
-Backend API\
-https://music-app-backend-tawny.vercel.app
 
 ------------------------------------------------------------------------
 
-## 📈 GitHub Stats
+## 📁 Project Structure
 
--   MERN Stack Projects
--   REST API Development
--   Frontend UI Development
--   Full Stack Applications
+````
+backend
+│
+├── config
+│   └── cloudinary.js
+│
+├── models
+│   ├── Song.js
+│   ├── User.js
+│   ├── Playlist.js
+│   ├── Comment.js
+│   └── Like.js
+│
+├── routes
+│   ├── auth.js
+│   ├── songs.js
+│   ├── playlists.js
+│   ├── comments.js
+│   └── likes.js
+│
+├── middleware
+│   └── authMiddleware.js
+│
+├── app.js
+├── server.js
+└── package.json
+
+````
+------------------------------------------------------------------------
+
+## ⚙️ Environment Variables
+
+Create a .env file in the backend root.
+
+````
+PORT=5000
+
+MONGODB_URI=your_mongodb_atlas_connection_string
+
+JWT_SECRET=your_secret_key
+
+CLOUDINARY_CLOUD_NAME=your_cloud_name
+CLOUDINARY_API_KEY=your_api_key
+CLOUDINARY_API_SECRET=your_api_secret
+
+````
+------------------------------------------------------------------------
+
+## 📡 API Endpoints
+Auth
+
+```
+POST /api/auth/register
+POST /api/auth/login
+
+```
 
 ------------------------------------------------------------------------
 
-## 📫 Connect With Me
+## Songs
 
-GitHub: https://github.com/\
-LinkedIn: https://linkedin.com/
+```
+GET /api/songs
+GET /api/songs/:id
+POST /api/songs
+PUT /api/songs/:id
+DELETE /api/songs/:id
+
+```
 
 ------------------------------------------------------------------------
+## Playlists
+
+```
+GET /api/playlists
+POST /api/playlists
+DELETE /api/playlists/:id
+
+```
+
+------------------------------------------------------------------------
+## Comments & likes
+
+```
+GET /api/comments/:songId
+POST /api/comments
+
+POST /api/likes/:songId
+DELETE /api/likes/:songId
+```
+
+------------------------------------------------------------------------
+
+
+##🧑‍💻 Author
+
+Arulmozhi D
+MERN Stack Developer
+Frontend & Backend Developer
+
+------------------------------------------------------------------------
+
 
 ⭐ Always learning new technologies and improving my development skills.
