@@ -20,7 +20,7 @@ app.use(cors({
     "http://localhost:5173",
     "http://localhost:5000",
     "http://localhost:3002",
-    "https://music-app-backend-tawny.vercel.app"
+    "https://music-app-frontend-roan.vercel.app"
   ],
   methods: ["GET", "POST", "PUT", "PATCH", "DELETE"],
   credentials: true
