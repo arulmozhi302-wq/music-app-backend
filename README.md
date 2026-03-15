@@ -169,8 +169,8 @@ DELETE /api/likes/:songId
 ## 👨‍💻 Author
 
 **Arulmozhi D**  
-MERN Stack Developer
-Frontend & Backend Developer
+Frontend & Backend Developer | MERN Stack Developer
+
 
 ------------------------------------------------------------------------
 
